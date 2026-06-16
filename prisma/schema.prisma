@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  createdAt DateTime @default(now())
+  movies    Movie[]
+}
+
+model Movie {
+  tmdbId           Int
+  listType         String
+  seasonNumber     String   @default("")
+  title            String
+  releaseDate      String
+  posterPath       String?
+  mediaType        String
+  finishedDate     String?
+  favoriteCategory String?
+  isFavorite       Boolean  @default(false)
+  notes            String?
+  sortOrder        Int      @default(2147483647)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@id([tmdbId, listType, seasonNumber])
+  @@index([listType])
+  @@index([listType, mediaType])
+  @@index([listType, sortOrder])
+  @@index([userId])
+}
