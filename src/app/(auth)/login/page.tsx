@@ -1,30 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { LoginSchema, type LoginInput } from "@/schemas/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginInput>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
+  async function onSubmit(data: LoginInput) {
     const result = await signIn("credentials", {
-      email,
-      password,
+      email: data.email,
+      password: data.password,
       redirect: false,
     });
 
     if (result?.error) {
-      setError("E-Mail oder Passwort falsch.");
-      setLoading(false);
+      setError("root", { message: "E-Mail oder Passwort falsch." });
     } else {
       router.push("/watchlist/want-to-watch");
     }
@@ -39,7 +42,6 @@ export default function LoginPage() {
         className="w-full max-w-sm rounded-2xl p-8"
         style={{ backgroundColor: "var(--surface)" }}
       >
-        {/* Logo */}
         <div className="mb-8 text-center">
           <h1
             className="text-2xl font-bold tracking-tight"
@@ -52,8 +54,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label
               className="text-sm font-medium"
@@ -62,17 +63,21 @@ export default function LoginPage() {
               E-Mail
             </label>
             <input
+              {...register("email")}
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              placeholder="test@test.de"
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{
                 backgroundColor: "var(--surface-elevated)",
                 color: "var(--text-primary)",
-                border: "1px solid var(--border)",
+                border: `1px solid ${errors.email ? "var(--destructive)" : "var(--border)"}`,
               }}
             />
+            {errors.email && (
+              <p className="text-xs" style={{ color: "var(--destructive)" }}>
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -83,32 +88,36 @@ export default function LoginPage() {
               Passwort
             </label>
             <input
+              {...register("password")}
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              placeholder="••••••••"
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{
                 backgroundColor: "var(--surface-elevated)",
                 color: "var(--text-primary)",
-                border: "1px solid var(--border)",
+                border: `1px solid ${errors.password ? "var(--destructive)" : "var(--border)"}`,
               }}
             />
+            {errors.password && (
+              <p className="text-xs" style={{ color: "var(--destructive)" }}>
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
-          {error && (
+          {errors.root && (
             <p className="text-sm" style={{ color: "var(--destructive)" }}>
-              {error}
+              {errors.root.message}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="mt-2 rounded-lg py-2 text-sm font-semibold transition-opacity disabled:opacity-50"
             style={{ backgroundColor: "var(--accent)", color: "#000" }}
           >
-            {loading ? "Wird angemeldet..." : "Anmelden"}
+            {isSubmitting ? "Wird angemeldet..." : "Anmelden"}
           </button>
         </form>
       </div>
