@@ -59,6 +59,7 @@ export const ReorderFavoritesSchema = z.object({
   ).min(1, "Mindestens ein Element erforderlich"),
 });
 
+// TypeScript-Typen automatisch ableiten
 export type WatchListType = z.infer<typeof WatchListTypeSchema>;
 export type MediaType = z.infer<typeof MediaTypeSchema>;
 export type FavoriteCategory = z.infer<typeof FavoriteCategorySchema>;

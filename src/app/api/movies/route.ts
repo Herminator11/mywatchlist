@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBody } from "@/lib/validate";
-import { requireAuth } from "@/lib/session";
 import { AddMovieSchema } from "@/schemas/movie";
+import { requireAuth } from "@/lib/session";
 
+// GET /api/movies?listType=WANT_TO_WATCH&mediaType=tv
 export async function GET(req: NextRequest) {
   const { user, error } = await requireAuth();
-  if (error) return error;
+    if (error) return error;
 
   const { searchParams } = new URL(req.url);
   const listType = searchParams.get("listType");
@@ -18,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   const movies = await prisma.movie.findMany({
     where: {
-      userId: user!.id,
+      userId: user.id,
       listType,
       ...(mediaType ? { mediaType } : {}),
     },
@@ -28,6 +30,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(movies);
 }
 
+// POST /api/movies
 export async function POST(req: NextRequest) {
   const { user, error } = await requireAuth();
   if (error) return error;
@@ -46,8 +49,8 @@ export async function POST(req: NextRequest) {
         seasonNumber: data.seasonNumber ?? "",
       },
     },
-    update: { ...data, userId: user!.id },
-    create: { ...data, userId: user!.id, seasonNumber: data.seasonNumber ?? "" },
+    update: { ...data, userId: user.id },
+    create: { ...data, userId: user.id, seasonNumber: data.seasonNumber ?? "" },
   });
 
   return NextResponse.json(movie, { status: 201 });

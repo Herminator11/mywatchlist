@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { requireAuth } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
-  const { error } = await requireAuth();
+ const { user, error } = await requireAuth();
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
 
   const data = await res.json();
 
+  // Nur Filme und Serien, ohne Personen
   const results = data.results
     .filter((item: { media_type: string }) =>
       item.media_type === "movie" || item.media_type === "tv"

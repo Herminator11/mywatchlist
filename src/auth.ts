@@ -12,7 +12,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        // Prisma hier lazy importieren – bleibt aus Edge Runtime raus
         const { prisma } = await import("@/lib/prisma");
 
         const user = await prisma.user.findUnique({

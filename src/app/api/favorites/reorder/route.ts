@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBody } from "@/lib/validate";
-import { requireAuth } from "@/lib/session";
 import { ReorderFavoritesSchema } from "@/schemas/movie";
+import { requireAuth } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
   const { user, error } = await requireAuth();

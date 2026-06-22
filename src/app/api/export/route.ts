@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/session";
 
 export async function GET() {
   const { user, error } = await requireAuth();
-  if (error) return error;
+    if (error) return error;
 
   const movies = await prisma.movie.findMany({
     where: {
-      userId: user!.id,
+      userId: user.id,
       listType: { in: ["RECENTLY_WATCHED_TV", "RECENTLY_WATCHED_MOVIES"] },
     },
     orderBy: { finishedDate: "desc" },

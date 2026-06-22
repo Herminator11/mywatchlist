@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBody } from "@/lib/validate";
-import { requireAuth } from "@/lib/session";
 import { EditMovieSchema } from "@/schemas/movie";
+import { requireAuth } from "@/lib/session";
 
+// PATCH /api/movies/[id]
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,22 +26,25 @@ export async function PATCH(
   const data = validation.data;
 
   const result = await prisma.$transaction(async (tx) => {
+    // 1. Alten Eintrag löschen
     await tx.movie.deleteMany({
       where: {
         tmdbId,
         listType: data.oldListType,
         seasonNumber: data.oldSeasonNumber,
-        userId: user!.id,
+        userId: user.id,
       },
     });
 
+    // 2. isFavorite auf ALLE Einträge dieser tmdbId anwenden
     if (data.isFavorite !== undefined) {
       await tx.movie.updateMany({
-        where: { tmdbId, userId: user!.id },
+        where: { tmdbId, userId: user.id },
         data: { isFavorite: data.isFavorite },
       });
     }
 
+    // 3. Neuen Eintrag erstellen
     return tx.movie.upsert({
       where: {
         tmdbId_listType_seasonNumber: {
@@ -56,7 +61,7 @@ export async function PATCH(
         finishedDate: data.finishedDate,
         favoriteCategory: data.favoriteCategory,
         notes: data.notes,
-        userId: user!.id,
+        userId: user.id,
       },
       create: {
         tmdbId,
@@ -69,7 +74,7 @@ export async function PATCH(
         finishedDate: data.finishedDate,
         favoriteCategory: data.favoriteCategory,
         notes: data.notes,
-        userId: user!.id,
+        userId: user.id,
       },
     });
   });
@@ -77,6 +82,7 @@ export async function PATCH(
   return NextResponse.json(result);
 }
 
+// DELETE /api/movies/[id]?listType=X&seasonNumber=Y&mediaType=Z
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -100,12 +106,14 @@ export async function DELETE(
   }
 
   if (mediaType === "tv" && seasonNumber !== null) {
+    // TV: exakt eine Staffel löschen
     await prisma.movie.deleteMany({
-      where: { tmdbId, listType, seasonNumber, userId: user!.id },
+      where: { tmdbId, listType, seasonNumber, userId: user.id },
     });
   } else {
+    // Film: alle Einträge in der Liste löschen
     await prisma.movie.deleteMany({
-      where: { tmdbId, listType, userId: user!.id },
+      where: { tmdbId, listType, userId: user.id },
     });
   }
 

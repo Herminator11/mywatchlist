@@ -80,6 +80,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Password */}
           <div className="flex flex-col gap-1">
             <label
               className="text-sm font-medium"
