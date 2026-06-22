@@ -27,7 +27,8 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("root", { message: "E-Mail oder Passwort falsch." });
+      setError("E-Mail oder Passwort falsch.");
+      setLoading(false);
     } else {
       router.push("/watchlist/want-to-watch");
     }
@@ -56,8 +57,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          {/* Email */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label
               className="text-sm font-medium"
@@ -66,9 +66,10 @@ export default function LoginPage() {
               E-Mail
             </label>
             <input
-              {...register("email")}
               type="email"
-              placeholder="test@test.de"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{
                 backgroundColor: "var(--surface-elevated)",
@@ -92,37 +93,32 @@ export default function LoginPage() {
               Passwort
             </label>
             <input
-              {...register("password")}
               type="password"
-              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{
                 backgroundColor: "var(--surface-elevated)",
                 color: "var(--text-primary)",
-                border: `1px solid ${errors.password ? "var(--destructive)" : "var(--border)"}`,
+                border: "1px solid var(--border)",
               }}
             />
-            {errors.password && (
-              <p className="text-xs" style={{ color: "var(--destructive)" }}>
-                {errors.password.message}
-              </p>
-            )}
           </div>
 
-          {/* Root Error (falsches Passwort etc.) */}
-          {errors.root && (
+          {error && (
             <p className="text-sm" style={{ color: "var(--destructive)" }}>
-              {errors.root.message}
+              {error}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading}
             className="mt-2 rounded-lg py-2 text-sm font-semibold transition-opacity disabled:opacity-50"
             style={{ backgroundColor: "var(--accent)", color: "#000" }}
           >
-            {isSubmitting ? "Wird angemeldet..." : "Anmelden"}
+            {loading ? "Wird angemeldet..." : "Anmelden"}
           </button>
         </form>
       </div>
