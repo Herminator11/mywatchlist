@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { requireAuth } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
- const { user, error } = await requireAuth();
+  const { error } = await requireAuth();
   if (error) return error;
 
   const { searchParams } = new URL(req.url);

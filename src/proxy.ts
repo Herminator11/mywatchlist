@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+// Next.js 16: "Middleware" heißt jetzt "Proxy" und muss bei src-Layout in src/ liegen.
+// Eigene NextAuth-Instanz nur für den Session-Check – KEIN Prisma-Import (Edge Runtime).
 const { auth } = NextAuth({
   providers: [Credentials({})],
   pages: { signIn: "/login" },
@@ -20,5 +22,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
