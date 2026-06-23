@@ -45,6 +45,7 @@ export const DeleteMovieSchema = z.object({
 
 export const MoveMovieSchema = z.object({
   action: z.enum(["to_watching", "to_watched"]),
+  fromListType: WatchListTypeSchema.default("WANT_TO_WATCH"),
   seasonNumber: z.string().optional(),
 });
 

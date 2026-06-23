@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { validateBody } from "@/lib/validate";
 import { requireAuth } from "@/lib/session";
 import { MoveMovieSchema } from "@/schemas/movie";
+import { formatFinishedDate } from "@/lib/utils";
 
 export async function POST(
   req: NextRequest,
@@ -21,16 +22,11 @@ export async function POST(
   const validation = validateBody(MoveMovieSchema, body);
   if (!validation.success) return validation.response;
 
-  const { action, seasonNumber = "" } = validation.data;
+  const { action, fromListType, seasonNumber = "" } = validation.data;
 
   const result = await prisma.$transaction(async (tx) => {
     const source = await tx.movie.findFirst({
-      where: {
-        tmdbId,
-        listType: "WANT_TO_WATCH",
-        seasonNumber,
-        userId: user!.id,
-      },
+      where: { tmdbId, listType: fromListType, seasonNumber, userId: user.id },
     });
 
     if (!source) throw new Error("Eintrag nicht gefunden");
@@ -42,21 +38,42 @@ export async function POST(
         ? "RECENTLY_WATCHED_TV"
         : "RECENTLY_WATCHED_MOVIES";
 
-    const moved = await tx.movie.create({
-      data: {
-        tmdbId: source.tmdbId,
+    // Beim Verschieben in "gesehen" automatisch das Abschlussdatum setzen,
+    // falls noch keins vorhanden ist.
+    const finishedDate =
+      action === "to_watched"
+        ? source.finishedDate ??
+          formatFinishedDate(new Date(), source.mediaType)
+        : source.finishedDate;
+
+    const movedData = {
+      title: source.title,
+      releaseDate: source.releaseDate,
+      posterPath: source.posterPath,
+      mediaType: source.mediaType,
+      finishedDate,
+      favoriteCategory: source.favoriteCategory,
+      isFavorite: source.isFavorite,
+      notes: source.notes,
+      sortOrder: source.sortOrder,
+      userId: source.userId,
+    };
+
+    // upsert am Ziel: kein Crash, falls die Karte dort schon existiert.
+    const moved = await tx.movie.upsert({
+      where: {
+        tmdbId_listType_seasonNumber: {
+          tmdbId,
+          listType: targetListType,
+          seasonNumber: source.seasonNumber,
+        },
+      },
+      update: movedData,
+      create: {
+        tmdbId,
         listType: targetListType,
         seasonNumber: source.seasonNumber,
-        title: source.title,
-        releaseDate: source.releaseDate,
-        posterPath: source.posterPath,
-        mediaType: source.mediaType,
-        finishedDate: source.finishedDate,
-        favoriteCategory: source.favoriteCategory,
-        isFavorite: source.isFavorite,
-        notes: source.notes,
-        sortOrder: source.sortOrder,
-        userId: source.userId,
+        ...movedData,
       },
     });
 
@@ -64,7 +81,7 @@ export async function POST(
       where: {
         tmdbId_listType_seasonNumber: {
           tmdbId,
-          listType: "WANT_TO_WATCH",
+          listType: fromListType,
           seasonNumber,
         },
       },
