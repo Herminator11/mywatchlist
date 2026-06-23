@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBody } from "@/lib/validate";
 import { ReorderFavoritesSchema } from "@/schemas/movie";
@@ -13,15 +12,16 @@ export async function POST(req: NextRequest) {
   const validation = validateBody(ReorderFavoritesSchema, body);
   if (!validation.success) return validation.response;
 
+  // updateMany mit userId im where: ein User kann nur seine EIGENEN Einträge
+  // umsortieren (verhindert IDOR, da der Composite-PK keine userId enthält).
   await prisma.$transaction(
     validation.data.items.map((item) =>
-      prisma.movie.update({
+      prisma.movie.updateMany({
         where: {
-          tmdbId_listType_seasonNumber: {
-            tmdbId: item.tmdbId,
-            listType: item.listType,
-            seasonNumber: item.seasonNumber,
-          },
+          tmdbId: item.tmdbId,
+          listType: item.listType,
+          seasonNumber: item.seasonNumber,
+          userId: user.id,
         },
         data: { sortOrder: item.sortOrder },
       })
