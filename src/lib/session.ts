@@ -15,7 +15,7 @@ export async function requireAuth() {
   }
 
   return {
-    user: session.user as { id: string; email: string; name?: string | null },
+    user: session.user as { id: string; username: string; name?: string | null },
     error: null,
   };
 }

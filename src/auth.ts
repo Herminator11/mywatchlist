@@ -6,16 +6,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        username: { label: "Benutzername", type: "text" },
+        password: { label: "Passwort", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.username || !credentials?.password) return null;
 
         const { prisma } = await import("@/lib/prisma");
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { username: credentials.username as string },
         });
 
         if (!user || !user.password) return null;
@@ -31,11 +31,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        token.username = (user as { username?: string }).username;
+      }
       return token;
     },
     async session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      if (token.username) session.user.username = token.username as string;
       return session;
     },
   },

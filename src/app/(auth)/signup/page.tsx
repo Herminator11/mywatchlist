@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LoginSchema, type LoginInput } from "@/schemas/auth";
+import { RegisterSchema, type RegisterInput } from "@/schemas/auth";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
 
   const {
@@ -15,12 +15,27 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<LoginInput>({
-    resolver: zodResolver(LoginSchema),
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: { username: "", password: "" },
   });
 
-  async function onSubmit(data: LoginInput) {
+  async function onSubmit(data: RegisterInput) {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError("root", {
+        message: body?.error ?? "Registrierung fehlgeschlagen.",
+      });
+      return;
+    }
+
+    // Nach erfolgreicher Registrierung direkt einloggen
     const result = await signIn("credentials", {
       username: data.username,
       password: data.password,
@@ -28,7 +43,9 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("root", { message: "Benutzername oder Passwort falsch." });
+      setError("root", {
+        message: "Account erstellt, aber Anmeldung fehlgeschlagen.",
+      });
     } else {
       router.push("/watchlist/want-to-watch");
     }
@@ -51,7 +68,7 @@ export default function LoginPage() {
             MyWatchlist
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-            Meld dich an um weiterzumachen
+            Erstelle einen Account
           </p>
         </div>
 
@@ -82,7 +99,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Password */}
           <div className="flex flex-col gap-1">
             <label
               className="text-sm font-medium"
@@ -93,6 +109,7 @@ export default function LoginPage() {
             <input
               {...register("password")}
               type="password"
+              autoComplete="new-password"
               placeholder="••••••••"
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{
@@ -120,7 +137,7 @@ export default function LoginPage() {
             className="mt-2 rounded-lg py-2 text-sm font-semibold transition-opacity disabled:opacity-50"
             style={{ backgroundColor: "var(--accent)", color: "#000" }}
           >
-            {isSubmitting ? "Wird angemeldet..." : "Anmelden"}
+            {isSubmitting ? "Wird erstellt..." : "Registrieren"}
           </button>
         </form>
 
@@ -128,13 +145,13 @@ export default function LoginPage() {
           className="mt-6 text-center text-sm"
           style={{ color: "var(--text-muted)" }}
         >
-          Noch keinen Account?{" "}
+          Schon einen Account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="font-medium"
             style={{ color: "var(--accent)" }}
           >
-            Registrieren
+            Anmelden
           </Link>
         </p>
       </div>
