@@ -21,17 +21,25 @@ export default function WantToWatchPage() {
     }
   }
 
+  const count = movies.length;
+  const subtitle = loading
+    ? "Wird geladen…"
+    : count === 0
+    ? "Deine Merkliste ist noch leer"
+    : `${count} ${count === 1 ? "Titel" : "Titel"} auf der Liste`;
+
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <PageHeader title="Want to Watch" />
-        <AddSheet listType="WANT_TO_WATCH" onAdd={addMovie} />
-      </div>
+      <PageHeader
+        title="Want to Watch"
+        subtitle={subtitle}
+        action={<AddSheet listType="WANT_TO_WATCH" onAdd={addMovie} />}
+      />
 
       {loading && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-[6.5rem] w-full rounded-xl" />
+            <Skeleton key={i} className="h-[5.9rem] w-full rounded-xl" />
           ))}
         </div>
       )}
@@ -42,20 +50,30 @@ export default function WantToWatchPage() {
         </p>
       )}
 
-      {!loading && !error && movies.length === 0 && (
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Noch nichts auf der Liste. Füge oben einen Film oder eine Serie hinzu.
-        </p>
+      {!loading && !error && count === 0 && (
+        <div
+          className="rise rounded-xl border border-dashed p-10 text-center"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <p style={{ color: "var(--text-secondary)" }}>
+            Noch nichts auf der Liste.
+          </p>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            Füge oben über „Hinzufügen“ einen Film oder eine Serie hinzu.
+          </p>
+        </div>
       )}
 
-      {!loading && !error && movies.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {movies.map((movie) => (
-            <MediaCard
+      {!loading && !error && count > 0 && (
+        <div className="flex flex-col gap-2.5">
+          {movies.map((movie, i) => (
+            <div
               key={`${movie.tmdbId}_${movie.listType}_${movie.seasonNumber}`}
-              movie={movie}
-              onDelete={handleDelete}
-            />
+              className="rise"
+              style={{ animationDelay: `${i * 55}ms` }}
+            >
+              <MediaCard movie={movie} onDelete={handleDelete} />
+            </div>
           ))}
         </div>
       )}

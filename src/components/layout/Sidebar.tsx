@@ -2,49 +2,57 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const navItems = [
-  { href: "/watchlist/want-to-watch", label: "Want to Watch", icon: "🎬" },
-  { href: "/watchlist/currently-watching", label: "Currently Watching", icon: "▶️" },
-  { href: "/watchlist/recently-watched", label: "Recently Watched", icon: "✅" },
-  { href: "/watchlist/favorites", label: "Favoriten", icon: "⭐" },
-  { href: "/search", label: "Suche", icon: "🔍" },
-  { href: "/settings", label: "Einstellungen", icon: "⚙️" },
-];
+import { navItems } from "./nav-config";
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
     <aside
-      className="hidden md:flex flex-col w-56 min-h-screen px-3 py-6 border-r"
-      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
+      className="hidden md:flex flex-col w-60 min-h-screen px-4 py-7 border-r"
+      style={{
+        backgroundColor: "color-mix(in oklab, var(--surface) 70%, transparent)",
+        borderColor: "var(--border)",
+      }}
     >
-      {/* Logo */}
-      <div className="px-3 mb-8">
+      {/* Brand */}
+      <div className="px-2 mb-10 flex items-center gap-2.5">
         <span
-          className="text-lg font-bold tracking-tight"
-          style={{ color: "var(--accent)" }}
+          className="block h-7 w-1 rounded-full"
+          style={{ backgroundColor: "var(--oxblood)" }}
+        />
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            fontSize: "1.35rem",
+            letterSpacing: "-0.02em",
+            color: "var(--text-primary)",
+          }}
         >
           MyWatchlist
         </span>
       </div>
 
-      {/* Nav Links */}
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-col gap-0.5">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
               style={{
-                backgroundColor: isActive ? "var(--accent)" : "transparent",
-                color: isActive ? "#000" : "var(--text-secondary)",
+                backgroundColor: isActive
+                  ? "color-mix(in oklab, var(--accent) 16%, transparent)"
+                  : "transparent",
+                color: isActive ? "var(--accent)" : "var(--text-secondary)",
+                fontWeight: isActive ? 500 : 400,
               }}
             >
-              <span>{item.icon}</span>
+              <Icon size={18} strokeWidth={isActive ? 2.4 : 2} />
               {item.label}
             </Link>
           );
