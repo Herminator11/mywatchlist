@@ -10,7 +10,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { TmdbSearchInput } from "@/components/search/TmdbSearchInput";
 import { posterUrl, tmdbReleaseDate, tmdbTitle, type TmdbResult } from "@/lib/tmdb";
 import type { AddMovieInput, WatchListType } from "@/schemas/movie";
@@ -64,10 +63,14 @@ export function AddSheet({ listType = "WANT_TO_WATCH", onAdd }: AddSheetProps) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="btn-accent inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium"
+      >
         <Plus size={16} />
         Hinzufügen
-      </Button>
+      </button>
 
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent
@@ -145,16 +148,23 @@ export function AddSheet({ listType = "WANT_TO_WATCH", onAdd }: AddSheetProps) {
                 )}
 
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
+                  <button
+                    type="button"
                     onClick={() => setSelected(null)}
                     disabled={submitting}
+                    className="rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:opacity-40"
+                    style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}
                   >
                     Zurück
-                  </Button>
-                  <Button onClick={handleConfirm} disabled={submitting}>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirm}
+                    disabled={submitting}
+                    className="btn-accent rounded-lg px-3.5 py-2 text-sm font-medium disabled:opacity-50"
+                  >
                     {submitting ? "Wird hinzugefügt..." : "Hinzufügen"}
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}

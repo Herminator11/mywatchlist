@@ -1,15 +1,28 @@
 @import "tailwindcss";
 
+/* ─── Kino-Editorial (Criterion) ──────────────────────────────────────────
+   Warmes Papier-Schwarz, Creme-Text, dominante Marigold-Signatur,
+   scharfer Oxblood-Akzent. Token-Namen bleiben kompatibel, Werte sind neu. */
 :root {
-  --background: #1c1c1e;
-  --surface: #2c2c2e;
-  --surface-elevated: #3a3a3c;
-  --accent: #ffd60a;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(235, 235, 245, 0.8);
-  --text-muted: rgba(235, 235, 245, 0.4);
-  --border: #38383a;
-  --destructive: #ff453a;
+  --background: #16130d;
+  --surface: #1f1a12;
+  --surface-elevated: #2a2317;
+  --border: #362e20;
+
+  --text-primary: #f2e8d5;
+  --text-secondary: #b6a888;
+  --text-muted: #7d7058;
+
+  --accent: #e8b53f;        /* Marigold – dominante Signalfarbe */
+  --accent-ink: #1a1305;    /* Text auf Marigold */
+  --oxblood: #a13b2c;       /* scharfer Sekundärakzent */
+
+  --accent-tv: #6f8f54;     /* Serien-Badge (Olive) */
+  --accent-movie: #c47a36;  /* Film-Badge (Burnt Orange) */
+  --destructive: #b5402f;
+
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-sans), system-ui, sans-serif;
 }
 
 * {
@@ -18,11 +31,72 @@
 
 body {
   background-color: var(--background);
+  /* Atmosphäre & Tiefe statt reiner Fläche: warme Lichtquelle oben,
+     Oxblood-Schimmer unten rechts, dunkle Vignette an den Rändern. */
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, rgba(232, 181, 63, 0.07), transparent 55%),
+    radial-gradient(90% 70% at 100% 100%, rgba(161, 59, 44, 0.08), transparent 50%),
+    radial-gradient(140% 120% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.35));
+  background-attachment: fixed;
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Feine Film-Grain-Textur über der ganzen Fläche */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.05;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
+
+/* ─── Motion: gestaffelter Page-Load ──────────────────────────────────── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rise {
+  opacity: 0;
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; opacity: 1; }
+  body { background-attachment: scroll; }
+}
+
+/* ─── Komponenten ─────────────────────────────────────────────────────── */
+.media-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+.media-card:hover {
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+  background-color: var(--surface-elevated);
+  transform: translateY(-2px);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-accent:hover { filter: brightness(1.07); }
+.btn-accent:active { transform: translateY(1px); }
+
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--background); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
