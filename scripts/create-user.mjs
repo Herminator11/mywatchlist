@@ -1,24 +1,34 @@
-import Database from "better-sqlite3";
-import { randomBytes } from "node:crypto";
+// Legt einen User direkt in der Neon-DB an (zum Seeden / Admin).
+// Nutzung: node scripts/create-user.mjs <benutzername> <passwort>
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(__dirname, "../prisma/dev.db");
+const username = process.argv[2];
+const password = process.argv[3];
 
-const db = new Database(dbPath);
+if (!username || !password) {
+  console.error("Nutzung: node scripts/create-user.mjs <benutzername> <passwort>");
+  process.exit(1);
+}
 
-const id = randomBytes(8).toString("hex");
-const hash = await bcrypt.hash("test1234", 12);
-const now = Date.now();
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(new Pool({ connectionString: process.env.DATABASE_URL })),
+});
 
-db.prepare(`
-  INSERT OR REPLACE INTO User (id, email, name, password, createdAt)
-  VALUES (?, ?, ?, ?, ?)
-`).run(id, "test@test.de", "Test User", hash, now);
+const passwordHash = await bcrypt.hash(password, 12);
 
-const user = db.prepare("SELECT * FROM User WHERE email = ?").get("test@test.de");
-console.log("User erstellt:", user);
+// Idempotent: existiert der Username schon, wird nur das Passwort aktualisiert.
+const user = await prisma.user.upsert({
+  where: { username },
+  update: { password: passwordHash },
+  create: { username, name: username, password: passwordHash },
+});
 
-db.close();
+console.log("User angelegt/aktualisiert:", { id: user.id, username: user.username });
+
+await prisma.$disconnect();

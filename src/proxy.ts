@@ -10,13 +10,15 @@ const { auth } = NextAuth({
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
-  const isLoginPage = req.nextUrl.pathname.startsWith("/login");
+  const { pathname } = req.nextUrl;
+  const isPublicPage =
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
 
-  if (!isLoggedIn && !isLoginPage) {
+  if (!isLoggedIn && !isPublicPage) {
     return Response.redirect(new URL("/login", req.url));
   }
 
-  if (isLoggedIn && isLoginPage) {
+  if (isLoggedIn && isPublicPage) {
     return Response.redirect(new URL("/watchlist/want-to-watch", req.url));
   }
 });
