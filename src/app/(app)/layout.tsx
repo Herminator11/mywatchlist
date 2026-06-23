@@ -2,6 +2,7 @@ import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { Toaster } from "@/components/ui/sonner";
 
 export default async function AppLayout({
   children,
@@ -19,6 +20,7 @@ export default async function AppLayout({
         </main>
         <MobileNav />
       </div>
+      <Toaster />
     </SessionProvider>
   );
 }
