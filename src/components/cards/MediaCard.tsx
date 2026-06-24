@@ -10,10 +10,11 @@ interface MediaCardProps {
   movie: Movie;
   onDelete?: (movie: Movie) => Promise<void> | void;
   actions?: ReactNode;
+  extraMeta?: ReactNode;
 }
 
 // Universelle Karte für einen Film-/Serien-Eintrag (Kino-Editorial).
-export function MediaCard({ movie, onDelete, actions }: MediaCardProps) {
+export function MediaCard({ movie, onDelete, actions, extraMeta }: MediaCardProps) {
   const [deleting, setDeleting] = useState(false);
   const poster = posterUrl(movie.posterPath);
   const year = releaseYear(movie.releaseDate);
@@ -94,6 +95,9 @@ export function MediaCard({ movie, onDelete, actions }: MediaCardProps) {
             {year && <span style={{ color: "var(--text-muted)" }}>{year}</span>}
             {isTv && movie.seasonNumber && (
               <span style={{ color: "var(--text-muted)" }}>· {movie.seasonNumber}</span>
+            )}
+            {extraMeta && (
+              <span style={{ color: "var(--text-muted)" }}>· {extraMeta}</span>
             )}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
