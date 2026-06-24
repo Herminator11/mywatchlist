@@ -15,6 +15,7 @@ import {
   tmdbTitle,
   type TmdbResult,
 } from "@/lib/tmdb";
+import { SeasonPicker } from "@/components/sheets/SeasonPicker";
 import { formatFinishedDate } from "@/lib/utils";
 import type { AddMovieInput, WatchListType, MediaType } from "@/schemas/movie";
 
@@ -48,7 +49,7 @@ interface AddToListSheetProps {
 // Sheet aus der Suche: Treffer in eine frei wählbare Liste übernehmen.
 export function AddToListSheet({ result, onClose }: AddToListSheetProps) {
   const [listType, setListType] = useState<WatchListType>("WANT_TO_WATCH");
-  const [season, setSeason] = useState("1");
+  const [seasonValue, setSeasonValue] = useState("Staffel 1");
   const [submitting, setSubmitting] = useState(false);
 
   if (!result) {
@@ -71,7 +72,7 @@ export function AddToListSheet({ result, onClose }: AddToListSheetProps) {
     const input: AddMovieInput = {
       tmdbId: result.id,
       listType,
-      seasonNumber: needsSeason ? `Staffel ${season || "1"}` : "",
+      seasonNumber: needsSeason ? seasonValue : "",
       title: tmdbTitle(result),
       releaseDate: tmdbReleaseDate(result),
       posterPath: result.poster_path ?? null,
@@ -185,26 +186,11 @@ export function AddToListSheet({ result, onClose }: AddToListSheetProps) {
           </div>
 
           {needsSeason && (
-            <div className="flex flex-col gap-1">
-              <label
-                className="text-sm font-medium"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Staffel
-              </label>
-              <input
-                type="number"
-                min={1}
-                value={season}
-                onChange={(e) => setSeason(e.target.value)}
-                className="w-24 rounded-lg px-3 py-2 text-sm outline-none"
-                style={{
-                  backgroundColor: "var(--surface-elevated)",
-                  color: "var(--text-primary)",
-                  border: "1px solid var(--border)",
-                }}
-              />
-            </div>
+            <SeasonPicker
+              tmdbId={result.id}
+              value={seasonValue}
+              onChange={setSeasonValue}
+            />
           )}
 
           <button
