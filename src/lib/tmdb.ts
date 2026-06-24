@@ -11,6 +11,8 @@ export interface TmdbResult {
   first_air_date?: string;
   poster_path?: string | null;
   overview?: string;
+  vote_average?: number;
+  vote_count?: number;
 }
 
 export function posterUrl(path?: string | null): string | null {
@@ -29,4 +31,17 @@ export function releaseYear(date?: string | null): string {
   if (!date) return "";
   const year = date.slice(0, 4);
   return /^\d{4}$/.test(year) ? year : "";
+}
+
+// TMDb-Community-Score (vote_average 0–10), eine Nachkommastelle.
+export function formatScore(vote?: number): string | null {
+  if (!vote || vote <= 0) return null;
+  return vote.toFixed(1);
+}
+
+// Stimmenzahl kompakt: 1234 -> "1.2k", 980 -> "980".
+export function formatVotes(count?: number): string | null {
+  if (!count || count <= 0) return null;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return String(count);
 }
