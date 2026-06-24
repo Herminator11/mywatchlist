@@ -9,7 +9,7 @@ import { MediaCard } from "@/components/cards/MediaCard";
 import { EditSheet } from "@/components/sheets/EditSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMovies } from "@/hooks/useMovies";
-import { parseFinishedDate } from "@/lib/utils";
+import { parseFinishedDate, displayFinishedDate } from "@/lib/utils";
 
 type Tab = "tv" | "movies";
 
@@ -38,11 +38,6 @@ function groupByYear(movies: Movie[]) {
     return Number(b) - Number(a);
   });
   return keys.map((year) => ({ year, items: map.get(year)! }));
-}
-
-function cleanFinished(raw: string | null): string | null {
-  if (!raw) return null;
-  return raw.replace("finished: ", "").replace("watched: ", "").trim() || null;
 }
 
 export default function RecentlyWatchedPage() {
@@ -145,7 +140,7 @@ export default function RecentlyWatchedPage() {
                       movie={movie}
                       onDelete={handleDelete}
                       onEdit={setEditing}
-                      extraMeta={cleanFinished(movie.finishedDate)}
+                      extraMeta={displayFinishedDate(movie.finishedDate)}
                     />
                   </div>
                 );
