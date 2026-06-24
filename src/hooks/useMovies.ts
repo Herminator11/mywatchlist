@@ -1,61 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import type { Movie } from "@prisma/client";
 import type { AddMovieInput, WatchListType, MediaType } from "@/schemas/movie";
 
-// Reiner Daten-Load (ohne State) – von Effect und Refetch gemeinsam genutzt.
-async function loadMovies(
-  listType: WatchListType,
-  mediaType?: MediaType
-): Promise<Movie[]> {
+// SWR-Key = die fertige Request-URL. Gleicher (listType, mediaType) → gleicher Key,
+// also ein gemeinsamer Cache-Eintrag über alle Mounts hinweg.
+function moviesKey(listType: WatchListType, mediaType?: MediaType): string {
   const params = new URLSearchParams({ listType });
   if (mediaType) params.set("mediaType", mediaType);
-  const res = await fetch(`/api/movies?${params.toString()}`);
-  if (!res.ok) throw new Error("Liste konnte nicht geladen werden");
-  return res.json();
+  return `/api/movies?${params.toString()}`;
 }
 
-// Lädt die Einträge einer Liste und bietet Mutationen (hinzufügen/löschen),
-// die danach automatisch neu laden. Verbindet die Screens mit der API.
+const fetcher = async (url: string): Promise<Movie[]> => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Liste konnte nicht geladen werden");
+  return res.json();
+};
+
+// Lädt die Einträge einer Liste (cached via SWR) und bietet Mutationen.
+// Cache wird zwischen Navigationen geteilt; Mutationen invalidieren alle Listen,
+// da Move/Edit Quell- UND Ziel-Liste betreffen können.
 export function useMovies(listType: WatchListType, mediaType?: MediaType) {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { mutate } = useSWRConfig();
+  const key = moviesKey(listType, mediaType);
+  // revalidateIfStale:false → beim Re-Mount (Tab-Wechsel) wird der Cache
+  // genutzt statt neu Neon zu treffen. Frische kommt über explizite
+  // Invalidierung nach Mutationen + Revalidierung bei Fenster-Fokus.
+  const { data, error, isLoading } = useSWR<Movie[]>(key, fetcher, {
+    revalidateIfStale: false,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
 
-  // Initiales Laden: setState ausschließlich in den .then-Callbacks (async),
-  // nie synchron im Effect-Body.
-  useEffect(() => {
-    let cancelled = false;
-    loadMovies(listType, mediaType)
-      .then((data) => {
-        if (!cancelled) {
-          setMovies(data);
-          setError(null);
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Unbekannter Fehler");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [listType, mediaType]);
-
-  // Refetch nach Mutationen (läuft aus Event-Handlern, nicht aus einem Effect).
-  const refetch = useCallback(async () => {
-    try {
-      setMovies(await loadMovies(listType, mediaType));
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Unbekannter Fehler");
-    }
-  }, [listType, mediaType]);
+  // Alle Filmlisten neu validieren (Filter-Form von mutate – trifft auch
+  // gerade nicht gemountete Listen, deren Cache sonst veraltet bliebe).
+  const invalidate = useCallback(
+    () => mutate((k) => typeof k === "string" && k.startsWith("/api/movies?")),
+    [mutate]
+  );
 
   const addMovie = useCallback(
     async (input: AddMovieInput) => {
@@ -68,9 +52,9 @@ export function useMovies(listType: WatchListType, mediaType?: MediaType) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "Hinzufügen fehlgeschlagen");
       }
-      await refetch();
+      await invalidate();
     },
-    [refetch]
+    [invalidate]
   );
 
   const deleteMovie = useCallback(
@@ -87,9 +71,9 @@ export function useMovies(listType: WatchListType, mediaType?: MediaType) {
         { method: "DELETE" }
       );
       if (!res.ok) throw new Error("Löschen fehlgeschlagen");
-      await refetch();
+      await invalidate();
     },
-    [refetch]
+    [invalidate]
   );
 
   const moveMovie = useCallback(
@@ -107,10 +91,19 @@ export function useMovies(listType: WatchListType, mediaType?: MediaType) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "Verschieben fehlgeschlagen");
       }
-      await refetch();
+      await invalidate();
     },
-    [refetch]
+    [invalidate]
   );
 
-  return { movies, loading, error, refetch, addMovie, deleteMovie, moveMovie };
+  return {
+    movies: data ?? [],
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    // Nach Edit aufgerufen (onSaved): Edit kann die Liste wechseln → breit invalidieren.
+    refetch: invalidate,
+    addMovie,
+    deleteMovie,
+    moveMovie,
+  };
 }
