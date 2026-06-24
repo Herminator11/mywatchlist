@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import type { Movie } from "@prisma/client";
 import { posterUrl, releaseYear } from "@/lib/tmdb";
@@ -8,10 +9,11 @@ import { posterUrl, releaseYear } from "@/lib/tmdb";
 interface MediaCardProps {
   movie: Movie;
   onDelete?: (movie: Movie) => Promise<void> | void;
+  actions?: ReactNode;
 }
 
 // Universelle Karte für einen Film-/Serien-Eintrag (Kino-Editorial).
-export function MediaCard({ movie, onDelete }: MediaCardProps) {
+export function MediaCard({ movie, onDelete, actions }: MediaCardProps) {
   const [deleting, setDeleting] = useState(false);
   const poster = posterUrl(movie.posterPath);
   const year = releaseYear(movie.releaseDate);
@@ -74,24 +76,27 @@ export function MediaCard({ movie, onDelete }: MediaCardProps) {
           )}
         </div>
 
-        <div className="mt-2 flex items-center gap-2.5 text-xs">
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium"
-            style={{
-              color: tint,
-              backgroundColor: "color-mix(in oklab, " + tint + " 14%, transparent)",
-            }}
-          >
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 text-xs">
             <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: tint }}
-            />
-            {isTv ? "Serie" : "Film"}
-          </span>
-          {year && <span style={{ color: "var(--text-muted)" }}>{year}</span>}
-          {isTv && movie.seasonNumber && (
-            <span style={{ color: "var(--text-muted)" }}>· {movie.seasonNumber}</span>
-          )}
+              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium"
+              style={{
+                color: tint,
+                backgroundColor: "color-mix(in oklab, " + tint + " 14%, transparent)",
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: tint }}
+              />
+              {isTv ? "Serie" : "Film"}
+            </span>
+            {year && <span style={{ color: "var(--text-muted)" }}>{year}</span>}
+            {isTv && movie.seasonNumber && (
+              <span style={{ color: "var(--text-muted)" }}>· {movie.seasonNumber}</span>
+            )}
+          </div>
+          {actions && <div className="flex shrink-0 items-center gap-1.5">{actions}</div>}
         </div>
       </div>
     </div>

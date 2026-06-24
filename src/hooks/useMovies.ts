@@ -92,5 +92,25 @@ export function useMovies(listType: WatchListType, mediaType?: MediaType) {
     [refetch]
   );
 
-  return { movies, loading, error, refetch, addMovie, deleteMovie };
+  const moveMovie = useCallback(
+    async (movie: Movie, action: "to_watching" | "to_watched") => {
+      const res = await fetch(`/api/movies/${movie.tmdbId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          fromListType: movie.listType,
+          seasonNumber: movie.seasonNumber,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? "Verschieben fehlgeschlagen");
+      }
+      await refetch();
+    },
+    [refetch]
+  );
+
+  return { movies, loading, error, refetch, addMovie, deleteMovie, moveMovie };
 }
