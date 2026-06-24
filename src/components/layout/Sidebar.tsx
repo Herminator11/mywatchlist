@@ -9,7 +9,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="hidden md:flex flex-col w-60 min-h-screen px-4 py-7 border-r"
+      className="hidden md:flex flex-col w-60 sticky top-0 h-screen self-start overflow-y-auto px-4 py-7 border-r"
       style={{
         backgroundColor: "color-mix(in oklab, var(--surface) 70%, transparent)",
         borderColor: "var(--border)",
