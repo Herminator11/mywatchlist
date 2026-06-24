@@ -1,4 +1,4 @@
-import { Bookmark, Play, Check, Star, Search, Settings } from "lucide-react";
+import { Bookmark, Play, Check, Star, Flame, Search, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -13,9 +13,10 @@ export const navItems: NavItem[] = [
   { href: "/watchlist/currently-watching", label: "Currently Watching", short: "Watching", icon: Play },
   { href: "/watchlist/recently-watched", label: "Recently Watched", short: "Watched", icon: Check },
   { href: "/watchlist/favorites", label: "Favoriten", short: "Favoriten", icon: Star },
+  { href: "/trends", label: "Trends", short: "Trends", icon: Flame },
   { href: "/search", label: "Suche", short: "Suche", icon: Search },
   { href: "/settings", label: "Einstellungen", short: "Settings", icon: Settings },
 ];
 
-// Untere Navigation (Mobile) zeigt nur die Kern-Listen + Suche.
+// Untere Navigation (Mobile) zeigt alles außer den Einstellungen.
 export const mobileNavItems = navItems.filter((i) => i.href !== "/settings");
