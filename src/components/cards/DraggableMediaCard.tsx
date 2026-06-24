@@ -10,10 +10,11 @@ interface DraggableMediaCardProps {
   id: string;
   movie: Movie;
   onDelete?: (movie: Movie) => Promise<void> | void;
+  onEdit?: (movie: Movie) => void;
 }
 
 // MediaCard mit Drag-Griff für die Favoriten-Sortierung (dnd-kit).
-export function DraggableMediaCard({ id, movie, onDelete }: DraggableMediaCardProps) {
+export function DraggableMediaCard({ id, movie, onDelete, onEdit }: DraggableMediaCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
 
@@ -41,6 +42,7 @@ export function DraggableMediaCard({ id, movie, onDelete }: DraggableMediaCardPr
         <MediaCard
           movie={movie}
           onDelete={onDelete}
+          onEdit={onEdit}
           extraMeta={movie.favoriteCategory ?? undefined}
         />
       </div>

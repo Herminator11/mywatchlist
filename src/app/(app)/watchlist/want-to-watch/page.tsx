@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Check, Play } from "lucide-react";
 import { toast } from "sonner";
 import type { Movie } from "@prisma/client";
@@ -7,11 +8,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MovieListView } from "@/components/cards/MovieListView";
 import { CardActionButton } from "@/components/cards/CardActionButton";
 import { AddSheet } from "@/components/sheets/AddSheet";
+import { EditSheet } from "@/components/sheets/EditSheet";
 import { useMovies } from "@/hooks/useMovies";
 
 export default function WantToWatchPage() {
-  const { movies, loading, error, addMovie, deleteMovie, moveMovie } =
+  const { movies, loading, error, addMovie, deleteMovie, moveMovie, refetch } =
     useMovies("WANT_TO_WATCH");
+  const [editing, setEditing] = useState<Movie | null>(null);
 
   async function handleDelete(movie: Movie) {
     try {
@@ -58,6 +61,7 @@ export default function WantToWatchPage() {
         emptyTitle="Noch nichts auf der Liste."
         emptyHint="Füge oben über „Hinzufügen“ einen Film oder eine Serie hinzu."
         onDelete={handleDelete}
+        onEdit={setEditing}
         renderActions={(movie) =>
           movie.mediaType === "tv" ? (
             <CardActionButton
@@ -77,6 +81,13 @@ export default function WantToWatchPage() {
             </CardActionButton>
           )
         }
+      />
+
+      <EditSheet
+        key={editing ? `${editing.tmdbId}_${editing.seasonNumber}` : "none"}
+        movie={editing}
+        onClose={() => setEditing(null)}
+        onSaved={refetch}
       />
     </div>
   );

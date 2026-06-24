@@ -6,6 +6,7 @@ import type { Movie } from "@prisma/client";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Segmented } from "@/components/common/Segmented";
 import { MediaCard } from "@/components/cards/MediaCard";
+import { EditSheet } from "@/components/sheets/EditSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMovies } from "@/hooks/useMovies";
 import { parseFinishedDate } from "@/lib/utils";
@@ -46,6 +47,7 @@ function cleanFinished(raw: string | null): string | null {
 
 export default function RecentlyWatchedPage() {
   const [tab, setTab] = useState<Tab>("tv");
+  const [editing, setEditing] = useState<Movie | null>(null);
   const tv = useMovies("RECENTLY_WATCHED_TV");
   const mv = useMovies("RECENTLY_WATCHED_MOVIES");
   const active = tab === "tv" ? tv : mv;
@@ -142,6 +144,7 @@ export default function RecentlyWatchedPage() {
                     <MediaCard
                       movie={movie}
                       onDelete={handleDelete}
+                      onEdit={setEditing}
                       extraMeta={cleanFinished(movie.finishedDate)}
                     />
                   </div>
@@ -150,6 +153,13 @@ export default function RecentlyWatchedPage() {
             </div>
           </section>
         ))}
+
+      <EditSheet
+        key={editing ? `${editing.tmdbId}_${editing.listType}_${editing.seasonNumber}` : "none"}
+        movie={editing}
+        onClose={() => setEditing(null)}
+        onSaved={active.refetch}
+      />
     </div>
   );
 }

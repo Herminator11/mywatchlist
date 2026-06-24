@@ -1,18 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import type { Movie } from "@prisma/client";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MovieListView } from "@/components/cards/MovieListView";
 import { CardActionButton } from "@/components/cards/CardActionButton";
+import { EditSheet } from "@/components/sheets/EditSheet";
 import { useMovies } from "@/hooks/useMovies";
 
 export default function CurrentlyWatchingPage() {
-  const { movies, loading, error, deleteMovie, moveMovie } = useMovies(
+  const { movies, loading, error, deleteMovie, moveMovie, refetch } = useMovies(
     "CURRENTLY_WATCHING",
     "tv"
   );
+  const [editing, setEditing] = useState<Movie | null>(null);
 
   async function handleDelete(movie: Movie) {
     try {
@@ -51,6 +54,7 @@ export default function CurrentlyWatchingPage() {
         emptyTitle="Du schaust gerade nichts."
         emptyHint="Verschiebe eine Serie aus „Want to Watch“ mit „Anschauen“ hierher."
         onDelete={handleDelete}
+        onEdit={setEditing}
         renderActions={(movie) => (
           <CardActionButton
             accent
@@ -60,6 +64,13 @@ export default function CurrentlyWatchingPage() {
             Gesehen
           </CardActionButton>
         )}
+      />
+
+      <EditSheet
+        key={editing ? `${editing.tmdbId}_${editing.seasonNumber}` : "none"}
+        movie={editing}
+        onClose={() => setEditing(null)}
+        onSaved={refetch}
       />
     </div>
   );

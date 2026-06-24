@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Movie } from "@prisma/client";
 import { posterUrl, releaseYear } from "@/lib/tmdb";
 
 interface MediaCardProps {
   movie: Movie;
   onDelete?: (movie: Movie) => Promise<void> | void;
+  onEdit?: (movie: Movie) => void;
   actions?: ReactNode;
   extraMeta?: ReactNode;
 }
 
 // Universelle Karte für einen Film-/Serien-Eintrag (Kino-Editorial).
-export function MediaCard({ movie, onDelete, actions, extraMeta }: MediaCardProps) {
+export function MediaCard({ movie, onDelete, onEdit, actions, extraMeta }: MediaCardProps) {
   const [deleting, setDeleting] = useState(false);
   const poster = posterUrl(movie.posterPath);
   const year = releaseYear(movie.releaseDate);
@@ -63,18 +64,31 @@ export function MediaCard({ movie, onDelete, actions, extraMeta }: MediaCardProp
           >
             {movie.title}
           </h3>
-          {onDelete && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleting}
-              aria-label="Eintrag löschen"
-              className="-mr-1 shrink-0 rounded-md p-1.5 transition-colors hover:bg-[color-mix(in_oklab,var(--destructive)_18%,transparent)] disabled:opacity-40"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
+          <div className="flex shrink-0 items-center">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(movie)}
+                aria-label="Eintrag bearbeiten"
+                className="rounded-md p-1.5 transition-colors hover:bg-[color-mix(in_oklab,var(--accent)_16%,transparent)]"
+                style={{ color: "var(--text-muted)" }}
+              >
+                <Pencil size={15} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                aria-label="Eintrag löschen"
+                className="-mr-1 rounded-md p-1.5 transition-colors hover:bg-[color-mix(in_oklab,var(--destructive)_18%,transparent)] disabled:opacity-40"
+                style={{ color: "var(--text-muted)" }}
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mt-2 flex items-center justify-between gap-2">

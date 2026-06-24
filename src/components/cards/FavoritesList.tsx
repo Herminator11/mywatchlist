@@ -22,12 +22,13 @@ const keyOf = (m: Movie) => `${m.tmdbId}_${m.listType}_${m.seasonNumber}`;
 interface FavoritesListProps {
   initial: Movie[];
   onDelete: (movie: Movie) => Promise<void> | void;
+  onEdit?: (movie: Movie) => void;
   onPersist: (ordered: Movie[]) => void;
 }
 
 // Sortierbare Favoriten-Liste. Lokale Reihenfolge wird beim Drop persistiert.
 // Der Parent remountet via key, wenn sich die Einträge ändern (Add/Delete).
-export function FavoritesList({ initial, onDelete, onPersist }: FavoritesListProps) {
+export function FavoritesList({ initial, onDelete, onEdit, onPersist }: FavoritesListProps) {
   const [items, setItems] = useState<Movie[]>(initial);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -61,6 +62,7 @@ export function FavoritesList({ initial, onDelete, onPersist }: FavoritesListPro
               id={keyOf(m)}
               movie={m}
               onDelete={onDelete}
+              onEdit={onEdit}
             />
           ))}
         </div>
