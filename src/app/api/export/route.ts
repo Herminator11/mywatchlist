@@ -16,7 +16,7 @@ export async function GET() {
 
   const lines = movies.map((m) => {
     const date = m.finishedDate ?? "Kein Datum";
-    const season = m.seasonNumber ? ` (Staffel ${m.seasonNumber})` : "";
+    const season = m.seasonNumber ? ` (${m.seasonNumber})` : "";
     return `${m.title}${season} — ${date}`;
   });
 
