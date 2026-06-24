@@ -43,6 +43,9 @@ export default function FavoritesPage() {
         }),
       });
       if (!res.ok) throw new Error();
+      // SWR-Cache mit der neuen Reihenfolge aktualisieren (sonst beim
+      // Zurücknavigieren kurz die alte Sortierung aus dem Cache).
+      await active.refetch();
     } catch {
       toast.error("Reihenfolge konnte nicht gespeichert werden");
     }
