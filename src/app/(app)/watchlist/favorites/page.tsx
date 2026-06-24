@@ -6,6 +6,7 @@ import type { Movie } from "@prisma/client";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Segmented } from "@/components/common/Segmented";
 import { FavoritesList } from "@/components/cards/FavoritesList";
+import { EditSheet } from "@/components/sheets/EditSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMovies } from "@/hooks/useMovies";
 
@@ -13,6 +14,7 @@ type Tab = "series" | "movies";
 
 export default function FavoritesPage() {
   const [tab, setTab] = useState<Tab>("series");
+  const [editing, setEditing] = useState<Movie | null>(null);
   const series = useMovies("FAVORITE_SERIES");
   const movies = useMovies("FAVORITE_MOVIES");
   const active = tab === "series" ? series : movies;
@@ -110,10 +112,18 @@ export default function FavoritesPage() {
             key={listKey}
             initial={active.movies}
             onDelete={handleDelete}
+            onEdit={setEditing}
             onPersist={persistOrder}
           />
         </>
       )}
+
+      <EditSheet
+        key={editing ? `${editing.tmdbId}_${editing.listType}_${editing.seasonNumber}` : "none"}
+        movie={editing}
+        onClose={() => setEditing(null)}
+        onSaved={active.refetch}
+      />
     </div>
   );
 }

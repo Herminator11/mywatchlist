@@ -12,6 +12,7 @@ interface MovieListViewProps {
   emptyTitle?: string;
   emptyHint?: string;
   onDelete?: (movie: Movie) => Promise<void> | void;
+  onEdit?: (movie: Movie) => void;
   renderActions?: (movie: Movie) => ReactNode;
 }
 
@@ -24,6 +25,7 @@ export function MovieListView({
   emptyTitle = "Noch nichts hier.",
   emptyHint,
   onDelete,
+  onEdit,
   renderActions,
 }: MovieListViewProps) {
   if (loading) {
@@ -71,6 +73,7 @@ export function MovieListView({
           <MediaCard
             movie={movie}
             onDelete={onDelete}
+            onEdit={onEdit}
             actions={renderActions?.(movie)}
           />
         </div>
