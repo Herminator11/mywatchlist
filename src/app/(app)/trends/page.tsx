@@ -5,6 +5,10 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Segmented } from "@/components/common/Segmented";
 import { TrendCard } from "@/components/cards/TrendCard";
 import { AddToListSheet } from "@/components/sheets/AddToListSheet";
+import {
+  TitleDetailDialog,
+  resultToTarget,
+} from "@/components/cards/TitleDetailDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { TmdbResult } from "@/lib/tmdb";
 
@@ -16,6 +20,7 @@ export default function TrendsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<TmdbResult | null>(null);
+  const [detail, setDetail] = useState<TmdbResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,7 +94,7 @@ export default function TrendsPage() {
               className="rise"
               style={{ animationDelay: `${Math.min(i, 11) * 40}ms` }}
             >
-              <TrendCard result={r} onAdd={setSelected} />
+              <TrendCard result={r} onAdd={setSelected} onSelect={setDetail} />
             </div>
           ))}
         </div>
@@ -99,6 +104,16 @@ export default function TrendsPage() {
         key={selected ? `${selected.media_type}_${selected.id}` : "none"}
         result={selected}
         onClose={() => setSelected(null)}
+      />
+
+      <TitleDetailDialog
+        target={detail ? resultToTarget(detail) : null}
+        onClose={() => setDetail(null)}
+        onAdd={() => {
+          const r = detail;
+          setDetail(null);
+          setSelected(r);
+        }}
       />
     </div>
   );

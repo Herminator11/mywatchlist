@@ -8,6 +8,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MovieListView } from "@/components/cards/MovieListView";
 import { CardActionButton } from "@/components/cards/CardActionButton";
 import { EditSheet } from "@/components/sheets/EditSheet";
+import {
+  TitleDetailDialog,
+  movieToTarget,
+  type DetailTarget,
+} from "@/components/cards/TitleDetailDialog";
 import { useMovies } from "@/hooks/useMovies";
 
 export default function CurrentlyWatchingPage() {
@@ -16,6 +21,7 @@ export default function CurrentlyWatchingPage() {
     "tv"
   );
   const [editing, setEditing] = useState<Movie | null>(null);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
 
   async function handleDelete(movie: Movie) {
     try {
@@ -55,6 +61,7 @@ export default function CurrentlyWatchingPage() {
         emptyHint="Verschiebe eine Serie aus „Want to Watch“ mit „Anschauen“ hierher."
         onDelete={handleDelete}
         onEdit={setEditing}
+        onSelect={(movie) => setDetail(movieToTarget(movie))}
         renderActions={(movie) => (
           <CardActionButton
             accent
@@ -72,6 +79,8 @@ export default function CurrentlyWatchingPage() {
         onClose={() => setEditing(null)}
         onSaved={refetch}
       />
+
+      <TitleDetailDialog target={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

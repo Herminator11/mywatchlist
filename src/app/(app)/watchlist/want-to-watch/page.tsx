@@ -9,12 +9,18 @@ import { MovieListView } from "@/components/cards/MovieListView";
 import { CardActionButton } from "@/components/cards/CardActionButton";
 import { AddSheet } from "@/components/sheets/AddSheet";
 import { EditSheet } from "@/components/sheets/EditSheet";
+import {
+  TitleDetailDialog,
+  movieToTarget,
+  type DetailTarget,
+} from "@/components/cards/TitleDetailDialog";
 import { useMovies } from "@/hooks/useMovies";
 
 export default function WantToWatchPage() {
   const { movies, loading, error, addMovie, deleteMovie, moveMovie, refetch } =
     useMovies("WANT_TO_WATCH");
   const [editing, setEditing] = useState<Movie | null>(null);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
 
   async function handleDelete(movie: Movie) {
     try {
@@ -62,6 +68,7 @@ export default function WantToWatchPage() {
         emptyHint="Füge oben über „Hinzufügen“ einen Film oder eine Serie hinzu."
         onDelete={handleDelete}
         onEdit={setEditing}
+        onSelect={(movie) => setDetail(movieToTarget(movie))}
         renderActions={(movie) =>
           movie.mediaType === "tv" ? (
             <CardActionButton
@@ -89,6 +96,8 @@ export default function WantToWatchPage() {
         onClose={() => setEditing(null)}
         onSaved={refetch}
       />
+
+      <TitleDetailDialog target={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

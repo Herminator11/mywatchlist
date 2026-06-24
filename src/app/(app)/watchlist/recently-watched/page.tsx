@@ -7,6 +7,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Segmented } from "@/components/common/Segmented";
 import { MediaCard } from "@/components/cards/MediaCard";
 import { EditSheet } from "@/components/sheets/EditSheet";
+import {
+  TitleDetailDialog,
+  movieToTarget,
+  type DetailTarget,
+} from "@/components/cards/TitleDetailDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMovies } from "@/hooks/useMovies";
 import { parseFinishedDate, displayFinishedDate } from "@/lib/utils";
@@ -43,6 +48,7 @@ function groupByYear(movies: Movie[]) {
 export default function RecentlyWatchedPage() {
   const [tab, setTab] = useState<Tab>("tv");
   const [editing, setEditing] = useState<Movie | null>(null);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
   const tv = useMovies("RECENTLY_WATCHED_TV");
   const mv = useMovies("RECENTLY_WATCHED_MOVIES");
   const active = tab === "tv" ? tv : mv;
@@ -140,6 +146,7 @@ export default function RecentlyWatchedPage() {
                       movie={movie}
                       onDelete={handleDelete}
                       onEdit={setEditing}
+                      onSelect={(m) => setDetail(movieToTarget(m))}
                       extraMeta={displayFinishedDate(movie.finishedDate)}
                     />
                   </div>
@@ -155,6 +162,8 @@ export default function RecentlyWatchedPage() {
         onClose={() => setEditing(null)}
         onSaved={active.refetch}
       />
+
+      <TitleDetailDialog target={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

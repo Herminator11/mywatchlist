@@ -13,6 +13,7 @@ interface MovieListViewProps {
   emptyHint?: string;
   onDelete?: (movie: Movie) => Promise<void> | void;
   onEdit?: (movie: Movie) => void;
+  onSelect?: (movie: Movie) => void;
   renderActions?: (movie: Movie) => ReactNode;
 }
 
@@ -26,6 +27,7 @@ export function MovieListView({
   emptyHint,
   onDelete,
   onEdit,
+  onSelect,
   renderActions,
 }: MovieListViewProps) {
   if (loading) {
@@ -74,6 +76,7 @@ export function MovieListView({
             movie={movie}
             onDelete={onDelete}
             onEdit={onEdit}
+            onSelect={onSelect}
             actions={renderActions?.(movie)}
           />
         </div>
