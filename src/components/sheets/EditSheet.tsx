@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { SeasonPicker } from "@/components/sheets/SeasonPicker";
 import { formatFinishedDate, parseFinishedDate } from "@/lib/utils";
 import type {
   EditMovieInput,
@@ -25,11 +26,6 @@ interface EditSheetProps {
 }
 
 const CATEGORIES: FavoriteCategory[] = ["Realserie", "Animated", "Anime"];
-
-function seasonNumberFrom(value: string): string {
-  const m = value.match(/(\d+)/);
-  return m ? m[1] : "1";
-}
 
 // Bearbeiten eines vorhandenen Eintrags – zeigt je nach Liste die passenden Felder.
 export function EditSheet({ movie, onClose, onSaved }: EditSheetProps) {
@@ -48,8 +44,8 @@ export function EditSheet({ movie, onClose, onSaved }: EditSheetProps) {
   const [category, setCategory] = useState<FavoriteCategory | "">(
     (movie?.favoriteCategory as FavoriteCategory | null) ?? ""
   );
-  const [season, setSeason] = useState(
-    movie ? seasonNumberFrom(movie.seasonNumber) : "1"
+  const [seasonValue, setSeasonValue] = useState(
+    movie?.seasonNumber || "Staffel 1"
   );
   const [finishedAt, setFinishedAt] = useState(() => {
     const d = parseFinishedDate(movie?.finishedDate);
@@ -65,7 +61,7 @@ export function EditSheet({ movie, onClose, onSaved }: EditSheetProps) {
   async function handleSave() {
     if (!movie) return;
 
-    const newSeason = isSeasonList ? `Staffel ${season || "1"}` : movie.seasonNumber;
+    const newSeason = isSeasonList ? seasonValue : movie.seasonNumber;
     const newFinished = isWatchedList
       ? finishedAt
         ? formatFinishedDate(new Date(`${finishedAt}T00:00:00`), movie.mediaType)
@@ -163,19 +159,11 @@ export function EditSheet({ movie, onClose, onSaved }: EditSheetProps) {
           )}
 
           {isSeasonList && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                Staffel
-              </label>
-              <input
-                type="number"
-                min={1}
-                value={season}
-                onChange={(e) => setSeason(e.target.value)}
-                className="w-24 rounded-lg px-3 py-2 text-sm outline-none"
-                style={fieldStyle}
-              />
-            </div>
+            <SeasonPicker
+              tmdbId={movie.tmdbId}
+              value={seasonValue}
+              onChange={setSeasonValue}
+            />
           )}
 
           {isWatchedList && (

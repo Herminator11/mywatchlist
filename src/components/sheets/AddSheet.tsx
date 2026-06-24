@@ -11,6 +11,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { TmdbSearchInput } from "@/components/search/TmdbSearchInput";
+import { SeasonPicker } from "@/components/sheets/SeasonPicker";
 import { posterUrl, tmdbReleaseDate, tmdbTitle, type TmdbResult } from "@/lib/tmdb";
 import type { AddMovieInput, WatchListType } from "@/schemas/movie";
 
@@ -23,12 +24,12 @@ interface AddSheetProps {
 export function AddSheet({ listType = "WANT_TO_WATCH", onAdd }: AddSheetProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TmdbResult | null>(null);
-  const [season, setSeason] = useState("1");
+  const [seasonValue, setSeasonValue] = useState("Staffel 1");
   const [submitting, setSubmitting] = useState(false);
 
   function reset() {
     setSelected(null);
-    setSeason("1");
+    setSeasonValue("Staffel 1");
     setSubmitting(false);
   }
 
@@ -43,7 +44,7 @@ export function AddSheet({ listType = "WANT_TO_WATCH", onAdd }: AddSheetProps) {
     const input: AddMovieInput = {
       tmdbId: selected.id,
       listType,
-      seasonNumber: isTv ? `Staffel ${season || "1"}` : "",
+      seasonNumber: isTv ? seasonValue : "",
       title: tmdbTitle(selected),
       releaseDate: tmdbReleaseDate(selected),
       posterPath: selected.poster_path ?? null,
@@ -125,26 +126,12 @@ export function AddSheet({ listType = "WANT_TO_WATCH", onAdd }: AddSheetProps) {
                 </div>
 
                 {selected.media_type === "tv" && (
-                  <div className="flex flex-col gap-1">
-                    <label
-                      className="text-sm font-medium"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Staffel
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={season}
-                      onChange={(e) => setSeason(e.target.value)}
-                      className="w-24 rounded-lg px-3 py-2 text-sm outline-none"
-                      style={{
-                        backgroundColor: "var(--surface-elevated)",
-                        color: "var(--text-primary)",
-                        border: "1px solid var(--border)",
-                      }}
-                    />
-                  </div>
+                  <SeasonPicker
+                    key={selected.id}
+                    tmdbId={selected.id}
+                    value={seasonValue}
+                    onChange={setSeasonValue}
+                  />
                 )}
 
                 <div className="flex gap-2">
