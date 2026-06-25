@@ -19,27 +19,42 @@ const fetcher = async (url: string): Promise<Movie[]> => {
   return res.json();
 };
 
+// Invalidiert ALLE Film-Caches: jede Listen-URL (/api/movies?…) und die
+// by-tmdb-Aggregation (fürs Detail-Pop-up). Wird nach jeder Mutation aufgerufen –
+// auch außerhalb von useMovies (z. B. AddToListSheet aus Suche/Trends), sonst
+// bleibt die Zielliste stale (revalidateIfStale ist aus).
+export function useInvalidateMovies() {
+  const { mutate } = useSWRConfig();
+  return useCallback(
+    () =>
+      // Cache leeren UND neu validieren: gemountete Listen laden sofort neu,
+      // nicht gemountete (Next App-Router cached das Segment) holen beim
+      // nächsten Lesen frisch – sonst bliebe ein woanders hinzugefügter Titel
+      // bis zum harten Reload unsichtbar.
+      mutate(
+        (k) =>
+          typeof k === "string" &&
+          (k.startsWith("/api/movies?") || k.startsWith("/api/movies/by-tmdb/")),
+        undefined,
+        { revalidate: true }
+      ),
+    [mutate]
+  );
+}
+
 // Lädt die Einträge einer Liste (cached via SWR) und bietet Mutationen.
 // Cache wird zwischen Navigationen geteilt; Mutationen invalidieren alle Listen,
 // da Move/Edit Quell- UND Ziel-Liste betreffen können.
 export function useMovies(listType: WatchListType, mediaType?: MediaType) {
-  const { mutate } = useSWRConfig();
   const key = moviesKey(listType, mediaType);
-  // revalidateIfStale:false → beim Re-Mount (Tab-Wechsel) wird der Cache
-  // genutzt statt neu Neon zu treffen. Frische kommt über explizite
-  // Invalidierung nach Mutationen + Revalidierung bei Fenster-Fokus.
-  const { data, error, isLoading } = useSWR<Movie[]>(key, fetcher, {
-    revalidateIfStale: false,
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-  });
+  // Stale-while-revalidate (SWR-Defaults): beim Mount wird der gecachte Stand
+  // sofort gezeigt UND im Hintergrund neu validiert. So erscheint ein Titel,
+  // der woanders hinzugefügt/verschoben wurde (z. B. aus der Suche), beim
+  // Wechsel auf die Liste ohne harten Reload. Der geteilte Cache sorgt weiter
+  // für sofortiges Rendern + Request-Dedup.
+  const { data, error, isLoading } = useSWR<Movie[]>(key, fetcher);
 
-  // Alle Filmlisten neu validieren (Filter-Form von mutate – trifft auch
-  // gerade nicht gemountete Listen, deren Cache sonst veraltet bliebe).
-  const invalidate = useCallback(
-    () => mutate((k) => typeof k === "string" && k.startsWith("/api/movies?")),
-    [mutate]
-  );
+  const invalidate = useInvalidateMovies();
 
   const addMovie = useCallback(
     async (input: AddMovieInput) => {

@@ -16,6 +16,7 @@ import {
   type TmdbResult,
 } from "@/lib/tmdb";
 import { SeasonPicker } from "@/components/sheets/SeasonPicker";
+import { useInvalidateMovies } from "@/hooks/useMovies";
 import { formatFinishedDate } from "@/lib/utils";
 import type { AddMovieInput, WatchListType, MediaType } from "@/schemas/movie";
 
@@ -51,6 +52,7 @@ export function AddToListSheet({ result, onClose }: AddToListSheetProps) {
   const [listType, setListType] = useState<WatchListType>("WANT_TO_WATCH");
   const [seasonValue, setSeasonValue] = useState("Staffel 1");
   const [submitting, setSubmitting] = useState(false);
+  const invalidateMovies = useInvalidateMovies();
 
   if (!result) {
     return <Sheet open={false} onOpenChange={() => onClose()} />;
@@ -93,6 +95,7 @@ export function AddToListSheet({ result, onClose }: AddToListSheetProps) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "Hinzufügen fehlgeschlagen");
       }
+      await invalidateMovies();
       const label = options.find((o) => o.value === listType)?.label ?? "Liste";
       toast.success(`„${input.title}“ → ${label}`);
       onClose();
