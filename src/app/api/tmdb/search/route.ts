@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
 
+// Öffentliche TMDb-Suche (auch für Gäste nutzbar).
 export async function GET(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
 

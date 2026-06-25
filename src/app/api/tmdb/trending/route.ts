@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
 
 interface RawResult {
   id: number;
@@ -9,11 +8,8 @@ interface RawResult {
   [key: string]: unknown;
 }
 
-// GET /api/tmdb/trending – Filme & Serien der Woche im Trend (serverseitig).
+// GET /api/tmdb/trending – Filme & Serien der Woche im Trend (öffentlich, auch für Gäste).
 export async function GET() {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "TMDB API Key fehlt" }, { status: 500 });

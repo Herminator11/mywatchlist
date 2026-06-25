@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
 import type { TitleDetails } from "@/lib/tmdb";
 
 interface TmdbGenre {
@@ -21,9 +20,6 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   const { id } = await params;
   const tmdbId = parseInt(id, 10);
   if (isNaN(tmdbId)) {

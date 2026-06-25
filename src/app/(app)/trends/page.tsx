@@ -10,11 +10,13 @@ import {
   resultToTarget,
 } from "@/components/cards/TitleDetailDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAddGuard } from "@/hooks/useAddGuard";
 import type { TmdbResult } from "@/lib/tmdb";
 
 type Filter = "all" | "tv" | "movie";
 
 export default function TrendsPage() {
+  const guardAdd = useAddGuard();
   const [results, setResults] = useState<TmdbResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +96,11 @@ export default function TrendsPage() {
               className="rise"
               style={{ animationDelay: `${Math.min(i, 11) * 40}ms` }}
             >
-              <TrendCard result={r} onAdd={setSelected} onSelect={setDetail} />
+              <TrendCard
+                result={r}
+                onAdd={(res) => guardAdd(() => setSelected(res))}
+                onSelect={setDetail}
+              />
             </div>
           ))}
         </div>
@@ -112,7 +118,7 @@ export default function TrendsPage() {
         onAdd={() => {
           const r = detail;
           setDetail(null);
-          setSelected(r);
+          guardAdd(() => setSelected(r));
         }}
       />
     </div>
