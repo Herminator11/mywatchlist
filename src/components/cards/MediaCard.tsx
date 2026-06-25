@@ -10,12 +10,13 @@ interface MediaCardProps {
   movie: Movie;
   onDelete?: (movie: Movie) => Promise<void> | void;
   onEdit?: (movie: Movie) => void;
+  onSelect?: (movie: Movie) => void;
   actions?: ReactNode;
   extraMeta?: ReactNode;
 }
 
 // Universelle Karte für einen Film-/Serien-Eintrag (Kino-Editorial).
-export function MediaCard({ movie, onDelete, onEdit, actions, extraMeta }: MediaCardProps) {
+export function MediaCard({ movie, onDelete, onEdit, onSelect, actions, extraMeta }: MediaCardProps) {
   const [deleting, setDeleting] = useState(false);
   const poster = posterUrl(movie.posterPath);
   const year = releaseYear(movie.releaseDate);
@@ -34,8 +35,12 @@ export function MediaCard({ movie, onDelete, onEdit, actions, extraMeta }: Media
 
   return (
     <div className="media-card flex gap-4 rounded-xl p-3">
-      <div
-        className="relative h-[5.5rem] w-14 shrink-0 overflow-hidden rounded-md"
+      <button
+        type="button"
+        onClick={onSelect ? () => onSelect(movie) : undefined}
+        disabled={!onSelect}
+        aria-label={onSelect ? `Details zu ${movie.title}` : undefined}
+        className="relative h-[5.5rem] w-14 shrink-0 overflow-hidden rounded-md enabled:cursor-pointer enabled:transition-transform enabled:hover:scale-[1.04]"
         style={{ backgroundColor: "var(--surface-elevated)" }}
       >
         {poster ? (
@@ -54,16 +59,27 @@ export function MediaCard({ movie, onDelete, onEdit, actions, extraMeta }: Media
             Kein Bild
           </div>
         )}
-      </div>
+      </button>
 
       <div className="flex min-w-0 flex-1 flex-col justify-center">
         <div className="flex items-start gap-2">
-          <h3
-            className="flex-1 truncate text-[0.95rem] font-medium"
-            style={{ color: "var(--text-primary)" }}
-          >
-            {movie.title}
-          </h3>
+          {onSelect ? (
+            <button
+              type="button"
+              onClick={() => onSelect(movie)}
+              className="flex-1 cursor-pointer truncate text-left text-[0.95rem] font-medium transition-colors hover:text-[var(--accent)]"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {movie.title}
+            </button>
+          ) : (
+            <h3
+              className="flex-1 truncate text-[0.95rem] font-medium"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {movie.title}
+            </h3>
+          )}
           <div className="flex shrink-0 items-center">
             {onEdit && (
               <button

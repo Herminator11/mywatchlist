@@ -7,6 +7,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Segmented } from "@/components/common/Segmented";
 import { FavoritesList } from "@/components/cards/FavoritesList";
 import { EditSheet } from "@/components/sheets/EditSheet";
+import {
+  TitleDetailDialog,
+  movieToTarget,
+  type DetailTarget,
+} from "@/components/cards/TitleDetailDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMovies } from "@/hooks/useMovies";
 
@@ -15,6 +20,7 @@ type Tab = "series" | "movies";
 export default function FavoritesPage() {
   const [tab, setTab] = useState<Tab>("series");
   const [editing, setEditing] = useState<Movie | null>(null);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
   const series = useMovies("FAVORITE_SERIES");
   const movies = useMovies("FAVORITE_MOVIES");
   const active = tab === "series" ? series : movies;
@@ -116,6 +122,7 @@ export default function FavoritesPage() {
             initial={active.movies}
             onDelete={handleDelete}
             onEdit={setEditing}
+            onSelect={(m) => setDetail(movieToTarget(m))}
             onPersist={persistOrder}
           />
         </>
@@ -127,6 +134,8 @@ export default function FavoritesPage() {
         onClose={() => setEditing(null)}
         onSaved={active.refetch}
       />
+
+      <TitleDetailDialog target={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }
