@@ -2,6 +2,7 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import useSWR from "swr";
+import { useSession } from "next-auth/react";
 import { Plus, Star, X } from "lucide-react";
 import type { Movie } from "@prisma/client";
 import {
@@ -77,13 +78,16 @@ function fmtDate(raw?: string | null): string | null {
 
 export function TitleDetailDialog({ target, onClose, onAdd }: TitleDetailDialogProps) {
   const { transform, glare, onMouseMove, onMouseLeave } = useTilt();
+  const { status } = useSession();
+  const isAuthed = status === "authenticated";
 
   const { data: details, isLoading: detailsLoading } = useSWR<TitleDetails>(
     target ? `/api/tmdb/${target.mediaType}/${target.tmdbId}` : null,
     fetcher
   );
+  // „Deine Daten" nur für angemeldete User – der Endpoint ist geschützt.
   const { data: entries } = useSWR<Movie[]>(
-    target ? `/api/movies/by-tmdb/${target.tmdbId}` : null,
+    target && isAuthed ? `/api/movies/by-tmdb/${target.tmdbId}` : null,
     fetcher
   );
 
@@ -205,7 +209,11 @@ export function TitleDetailDialog({ target, onClose, onAdd }: TitleDetailDialogP
 
                 {/* Abschnitt 1: Deine Daten */}
                 <Section title="Deine Daten">
-                  {entries === undefined ? (
+                  {!isAuthed ? (
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                      Melde dich an, um diesen Titel zu deinen Listen hinzuzufügen.
+                    </p>
+                  ) : entries === undefined ? (
                     <RowSkeleton />
                   ) : entries.length === 0 ? (
                     <p className="text-sm" style={{ color: "var(--text-muted)" }}>

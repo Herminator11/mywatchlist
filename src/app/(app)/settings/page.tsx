@@ -50,7 +50,7 @@ export default function SettingsPage() {
           </div>
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: "/trends" })}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
             style={{ color: "var(--destructive)", border: "1px solid var(--border)" }}
           >

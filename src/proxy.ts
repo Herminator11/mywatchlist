@@ -11,14 +11,12 @@ const { auth } = NextAuth({
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
-  const isPublicPage =
+  const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
 
-  if (!isLoggedIn && !isPublicPage) {
-    return Response.redirect(new URL("/login", req.url));
-  }
-
-  if (isLoggedIn && isPublicPage) {
+  // Gäste dürfen die App browsen (Trends/Suche nutzbar, geschützte Seiten zeigen
+  // ein In-Page-Login-Gate). Nur eingeloggte User von den Auth-Seiten wegleiten.
+  if (isLoggedIn && isAuthPage) {
     return Response.redirect(new URL("/watchlist/want-to-watch", req.url));
   }
 });

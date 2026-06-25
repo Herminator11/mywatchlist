@@ -8,11 +8,13 @@ import {
   TitleDetailDialog,
   resultToTarget,
 } from "@/components/cards/TitleDetailDialog";
+import { useAddGuard } from "@/hooks/useAddGuard";
 import type { TmdbResult } from "@/lib/tmdb";
 
 export default function SearchPage() {
   const [selected, setSelected] = useState<TmdbResult | null>(null);
   const [detail, setDetail] = useState<TmdbResult | null>(null);
+  const guardAdd = useAddGuard();
 
   return (
     <div>
@@ -34,7 +36,7 @@ export default function SearchPage() {
         onAdd={() => {
           const r = detail;
           setDetail(null);
-          setSelected(r);
+          guardAdd(() => setSelected(r));
         }}
       />
     </div>
